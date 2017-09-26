@@ -1,0 +1,11 @@
+Examples:
+
+Run     compass_example_A
+Run     compass_example_B
+
+
+Manual: compass_manual.docx
+
+
+Written by   Ali Yousefi
+Sep 22, 2017
