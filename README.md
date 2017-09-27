@@ -8,5 +8,5 @@ COMPASS is a Matlab state space modeling toolbox. It can handle:
 ### Examples ###
 See [compass_example_A.m](COMPASS_StateSpaceToolbox/compass_example_A.m) and [compass_example_B.m](COMPASS_StateSpaceToolbox/compass_example_B.m)
 
-## Documentation ###
+### Documentation ###
 See the [compass manual](compass_manual.docx)
