@@ -1,0 +1,12 @@
+To build the data file - like example_b - for each patient, we can do this:
+
+load('HNS_data');
+i = 12;
+dGain = HNS{i}(:,8);
+Resp  = HNS{i}(:,3);
+List  = HNS{i}(:,6);
+save('example_b','dGain','Resp','List');
+
+here, we extracted the data for patient number 12 from HNS group and saved it in example_b mat file.
+We can then run compass_example_B using this file
+

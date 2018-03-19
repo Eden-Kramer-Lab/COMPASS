@@ -27,7 +27,7 @@ function h=compass_plot_bound(mode, x ,y, y_low, y_high, x_title,y_title,fig_tit
     set(fill([x_inc x_dec],[y_high y_low(end:-1:1)],color),'EdgeColor',color);
     hold on;
     h=plot(x,y,'k');
-    set(h,'LineWidth',2);
+    set(h,'LineWidth',3);
     if mode == 1    % single figure
         hold off;
     end

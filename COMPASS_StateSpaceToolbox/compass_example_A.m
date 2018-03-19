@@ -1,39 +1,67 @@
-%% Load MSIT Data
-% data: Ii, Ini, Iin, Yk_1 , Yk
-load('MSIT_1.mat');
+%% Load behavioral data and prepare it for the toolbox
+% Data: Yb , Yn
+load('example_a.mat');
+% Yn - logarithm of reaction time
 
-%% Set Behavioral Model and Learning Procedure
+ind = find(~isnan(Yn));
+Yo  = Yn(ind)/1000;
+Yn  = log(Yn(ind)/1000);
+% Yb - decision (0/1)
+Yb  = Yb(ind); N   = length(Yn);
+% Input - 1 xi
+In = zeros(N,2);In(:,1)= 1; In(:,2)= 1;
+% Input, Ib is equal to In
+Ib = In;
+% Uk, which is all zero
+Uk = zeros(N,1);
+% valid, which is valid for the observed data point
+Valid = ones(N,1);  
+
+%% Build behavioral model and learning procedure
 %  create model
-Param = compass_create_state_space(1,0,5,0,[1;1],[1 2],[0 1],[],[]);
+Param = compass_create_state_space(1,1,2,2,eye(1,1),1,1,1,0);
 % set learning parameters
-Iter  = 100;
-Param = compass_set_learning_param(Param,Iter,0,1,1,1,1,1,1,2,1);
+Iter  = 250;
+Param = compass_set_learning_param(Param,Iter,0,1,0,1,1,1,1,1,0);
+% define censored point threshold
+Param = compass_set_censor_threshold_proc_mode(Param,log(2),1,1);
+ 
+%% Run learning with a mixture of normal & binary
+[XSmt,SSmt,Param,XPos,SPos,ML,YP,YB]=compass_em([1 1],Uk,In,Ib,Yn,Yb,Param,Valid);
 
-%% Format the Data
-% In
-In = [Ini Iin  ones(length(Yk),1) Ii Yk_1];
-% all data points are valid
-valid = ones(length(Yk),1);
-
-%% Run learning with Gamma model
-[XSmt,SSmt,Param,XPos,SPos,ML,Yp]=compass_em([2 0],[],In,[],Yk,[],Param,valid);
-
-[cov_state,cov_obs]=compass_param_covariance_info([2 0],[],In,[],Yk,[],Param,valid,XSmt,SSmt);
-
+%% Deviance analysis
+[DEV_C,DEV_D]= compass_deviance([1 1],In,Ib,Yn,Yb,Param,Valid,XSmt,SSmt);
 
 %% Extra Script
 figure(1)
-plot(Yk,'LineWidth',2);hold on;
-plot(Param.S+Yp,'LineWidth',2);
-plot(find(Ii==1),Yk(find(Ii==1)),'o'); 
-hold off;
-axis tight
-legend('RT','Yp','Interfernece Trial')
-xlabel('Trial');
-ylabel('RT(sec)');
+plot(find(Yb),Yb(find(Yb)),'go','MarkerSize',8,'LineWidth',3);hold on 
+plot(find(Yb==0),Yb(find(Yb==0)),'ro','MarkerSize',8,'LineWidth',3); 
+ylabel('Decision')
+set(gca,'YTick',[0 1])
+set(gca,'YTickLabel',{'Incorrect','Correct'})
+set(gca,'YTickLabelRotation',90)
+hold on
+yyaxis right
+plot(1:length(Yn),Yo,'LineWidth',3);hold on;
+ylabel('Reaction Time (sec)')
+xlabel('Trial Index')
+hold off
+title('Behavioral Signal')
+
 
 figure(2)
-K  = length(Yk);
+plot(YB,'LineWidth',3);hold on;
+hold on;
+load('prerau.mat');
+plot(bmode(2:end),'LineWidth',3);hold off
+ylabel('Probability of Picking Correct Choice')
+xlabel('Trial Index');
+hold off
+legend('COMPASS','Prerau Code')
+title('Learnign State')
+
+figure(3)
+K  = length(Yn);
 xm = zeros(K,1);
 xb = zeros(K,1);
 for i=1:K
@@ -44,38 +72,19 @@ compass_plot_bound(1,(1:K),xm,(xm-2*sqrt(xb))',(xm+2*sqrt(xb))');
 ylabel('x_k');
 xlabel('Trial');
 axis tight
-grid minor
+title('Learnign State plus Its Confidence Interval')
 
 
-figure(3)
+figure(5)
 for i=1:Iter
     ml(i)=ML{i}.Total;
 end
 plot(ml,'LineWidth',2);
 ylabel('ML')
 xlabel('Iter');
+title('Maximum Likelihood Curve')
 
-figure(4)
-err = Yk - Yp -Param.S;
-plot(err,'LineWidth',2);
-ylabel('Residual Error')
 
-figure(5)
-acf(err,10)
 
-figure(6)
-W     =     [Param.Ck(1)   Param.Ck(2)   Param.Dk(3)    Param.Dk(4)    Param.Dk(5)];
-W_up  = 1.96*[cov_obs.SE_C(1) cov_obs.SE_C(2) cov_obs.SE_D(3)  cov_obs.SE_D(4)  cov_obs.SE_D(5)];
-W_low = -1.96*[cov_obs.SE_C(1) cov_obs.SE_C(2) cov_obs.SE_D(3)  cov_obs.SE_D(4)  cov_obs.SE_D(5)];
-errorbar(1:5,W,W_up,W_low,'LineWidth',2);
-%xticks([1 2 3 4 5])
-ax = gca;
-set(ax,'XTick',[1:5])
-xticks = get(ax,'XTickLabel');
-xticks{1} = 'I_n_2_i';
-xticks{2} = 'I_i_2_i';
-xticks{3} = 'C_0';
-xticks{4} = 'I_i';
-xticks{5} = 'Y_k_-_1';
-set(ax,'XTickLabel',xticks)
-axis tight
+
+

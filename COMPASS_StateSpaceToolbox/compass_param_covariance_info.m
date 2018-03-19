@@ -45,8 +45,7 @@ for r=1:length(XSmt{1})
         tempAB = [];
     end
     % combine all three and take inverese
-    temp = Param.Wk(r,r)* pinv([tempA  
-        tempAB;
+    temp = Param.Wk(r,r)* pinv([tempA   tempAB;
                                tempAB'  tempB]);
     COV_X{r}.A  = temp(1:size(Param.Ak,1),1:size(Param.Ak,1));
     COV_X{r}.AB = temp(1:size(Param.Ak),size(Param.Ak)+1:end);
@@ -92,6 +91,7 @@ if DISTR(1)==1
     COV_C.D  = temp(length(Param.Ck)+1:end,length(Param.Ck)+1:end);
     COV_C.SE_D = sqrt(diag(COV_C.D));
     COV_C.V  = Param.Vk^2*2/K;
+    COV_C.SE_V = sqrt(COV_C.V);
     % we can also add the C&V, D&V as well
 end
 % Gamma
