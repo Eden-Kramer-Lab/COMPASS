@@ -896,6 +896,22 @@ for iter=1:Param.Iter
                 Vk = p_opt(1);
                 Ck(c_fill_ind)= p_opt(2:1+length(c_fill_ind));
                 Dk(d_fill_ind) = p_opt(2+length(c_fill_ind):end);
+            else
+                p0 = Vk;
+                % define bounds
+                lower_bound= eps;
+                upper_bound= 1e3;
+                % call optimization function
+                %options = optimoptions('fmincon','Display','off','DiffMaxChange',100,'MaxIter',1000,'Algorithm','interior-point');
+                [p_opt,temp]   = fminsearchbnd(@NormalParamV,p0,lower_bound,upper_bound);
+                MaxO = -temp;
+                disp('Normal');
+                
+                ck = Ck;
+                dk = Dk;
+                
+                % put the estimates back to model
+                Vk = p_opt;
             end
         end
         % if we only update Parameters of the model

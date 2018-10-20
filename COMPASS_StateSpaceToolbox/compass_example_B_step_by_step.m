@@ -1,33 +1,38 @@
-%% Load behavioral data and prepare it for the toolbox
-% Data: Yb , Yn
+%% Load Learning Data
+% data: Ii, Ini, Iin, Yk_1 , Yk
 load('LEARNING_1.mat');
-% Yn - logarithm of reaction time
-ind = find(~isnan(Yn)); Yn  = log(Yn(ind)/1000);
-% Yb - decision (0/1)
-Yb  = Yb(ind); N   = length(Yn);
-% Input - 1 xi
-In = zeros(N,2);In(:,1)= 1; In(:,2)= 1;
-% Input, Ib is equal to In
-Ib = In;
-% Uk, which is all zero
-Uk = zeros(N,1);
-% valid, which is valid for the observed data point
-Valid = zeros(N,1);  Valid(find(isfinite(Yn)))=1;
 
-%% Build behavioral model and learning procedure
+% Yn - log of reaction time
+ind = find(~isnan(Yn));
+Yn  = log(Yn(ind)/1000);
+Yb  = Yb(ind);
+N   = length(Yn);
+% Input, 1 xi
+In = zeros(N,2);
+In(:,1)=1;
+In(:,2)=1;
+% Input, Ib equal to In
+Ib = In;
+% Uk, which is zero
+Uk = zeros(N,1);
+% Valid, which is valid for observed point
+Valid = zeros(N,1);
+Valid(find(isfinite(Yn)))=1;
+
+%% Set Behavioral Model and Learning Procedure
 %  create model
 Param = compass_create_state_space(1,1,2,2,eye(1,1),1,1,1,0);
 % set learning parameters
 Iter  = 250;
 Param = compass_set_learning_param(Param,Iter,0,1,0,1,1,1,1,1,0);
-% define censored point threshold
+
 Param = compass_set_censor_threshold_proc_mode(Param,log(2),1,1);
  
-%% Run learning with a mixture of normal & binary
+%% Format the Data
+%% Run learning with Gamma model
 [XSmt,SSmt,Param,XPos,SPos,ML,YP,YB]=compass_em([1 1],Uk,In,Ib,Yn,Yb,Param,Valid);
 
-%% Deviance analysis
-[DEV_C,DEV_D]= compass_deviance([1 1],In,Ib,Yn,Yb,Param,Valid,XSmt,SSmt);
+
 
 %% Extra Script
 figure(1)
