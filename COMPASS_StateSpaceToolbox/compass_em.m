@@ -296,7 +296,7 @@ for iter=1:Param.Iter
                         % SPos update next
                         Hx = (Yn(k)-Mx)/Vk;
                         Sc = (CTk'*CTk)* Tx * (Tx-Hx);
-                        SPos{k} = ((SPre{k}^-1)+Sc)^-1;
+                        SPos{k} = pinv(pinv(SPre{k})+Sc);
                     end
                 else
                     % XPos, SPos
@@ -306,22 +306,22 @@ for iter=1:Param.Iter
                         in_loop = 10;
                         xpos = XPre{k};
                         Yp   =  CTk * XPre{k} + DTk * In(k,:)';
-                        Sk   =  (CTk' * Vk^-1 * CTk + SPre{k}^-1);
+                        Sk   =  (CTk' * Vk^-1 * CTk + pinv(SPre{k}));
                         for z= 1:in_loop
                             st   = min(MAX_EXP,ETk * xpos + FTk * Ib(k,:)');
                             pk   = exp(st)./(1+exp(st));
-                            xpos = XPre{k} +  Sk^-1 * ( ETk' *(Yb(k)-pk) + CTk'* Vk^-1 *(Yn(k)-Yp));
+                            xpos = XPre{k} +  pinv(Sk) * ( ETk' *(Yb(k)-pk) + CTk'* Vk^-1 *(Yn(k)-Yp));
                         end
                         XPos{k} = xpos;
                         % SPos
-                        SPos{k} = (SPre{k}^-1 + CTk' * Vk^-1 * CTk + ETk'*diag(pk.*(1-pk))*ETk )^-1;
+                        SPos{k} = pinv(pinv(SPre{k}) + CTk' * Vk^-1 * CTk + ETk'*diag(pk.*(1-pk))*ETk );
                     end
                     % one-step mode
                     if update_mode==2
                         Yp   =  CTk * XPre{k} + DTk * In(k,:)';
                         st   =  min(MAX_EXP,ETk * XPre{k} + FTk * Ib(k,:)');
                         pk   =  exp(st)./(1+exp(st));
-                        SPos{k} = (SPre{k}^-1 + ETk'*diag(pk.*(1-pk))*ETk + CTk' * Vk^-1 * CTk )^-1;
+                        SPos{k} = pinv(pinv(SPre{k}) + ETk'*diag(pk.*(1-pk))*ETk + CTk' * Vk^-1 * CTk );
                         XPos{k} = XPre{k} +  SPos{k} * (ETk' *(Yb(k)-pk) + CTk'* (Yn(k)-Yp) * Vk^-1);
                     end
                 end
@@ -503,14 +503,14 @@ for iter=1:Param.Iter
     SSmt{end} = SPos{end};
     for k=K-1:-1:1
         % Ak, equation (A.10)
-        As{k} = SPos{k} * Ak' *  SPre{k+1}^-1 ;
+        As{k} = SPos{k} * Ak' *  pinv(SPre{k+1}) ;
         % Smting function, equation (A.9)
         XSmt{k} = XPos{k} + As{k} * (XSmt{k+1}- XPre{k+1});
         % Variance update, equation (A.11)
         SSmt{k} = SPos{k} + As{k} * (SSmt{k+1}- SPre{k+1}) * As{k}';
     end
     % Kalman smoother for time 0
-    As0   = W0 * Ak' *  SPre{1}^-1;
+    As0   = W0 * Ak' * pinv(SPre{1});
     XSmt0 = X0 + As0 * (XSmt{1}- XPre{1}) ;
     SSmt0 = W0 + As0 * (SSmt{1}- SPre{1}) * As0';
     
@@ -1123,7 +1123,7 @@ end
            ey  =  etk*XSmt{z}+ftk*Ib(z,:)';
            sy  =  etk*SSmt{z}*etk';
            pt  =  1/(1+exp(-ey));
-           f   =  f - Yb(z)*ey + log(1+exp(ey))+0.5*pt*(pt-1)*sy;
+           f   =  f - Yb(z)*ey + log(1+exp(ey))+0.5*pt*(1-pt)*sy;
         end
     end
     % Gamma Paramater Estimation
