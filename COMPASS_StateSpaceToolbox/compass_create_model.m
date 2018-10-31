@@ -3,7 +3,7 @@ parameters = input('Please provide the exact path to your mat variable input fil
 load(parameters)
 %% Check that workspace variables exist
 if (exist('In','var'))==0 || (exist('Yn','var'))==0
-    fprintf('*Error: In and Yn do not concurrently exist* \nCheck uploaded data file to ensure necessary variables are included and spelled correctly.')
+    fprintf('*WARNING: In and Yn do not concurrently exist* \nCheck uploaded data file to ensure necessary variables are included and spelled correctly.')
     continuous =0;
     In=[];
     Yn=[];
@@ -11,7 +11,7 @@ else
     continuous = 1;
 end
 if (exist('Ib','var'))==0||(exist('Yb','var'))==0
-    fprintf('*Error: Ib and Yb do not concurrently exist* \nCheck uploaded data file to ensure necessary variables are included and spelled/capitalized correctly.')
+    fprintf('*WARNING: Ib and Yb do not concurrently exist* \nCheck uploaded data file to ensure necessary variables are included and spelled/capitalized correctly.')
     discrete=0;
     Ib=[];
     Yb=[];
@@ -23,9 +23,9 @@ if (continuous == 0)&&(discrete==0)
     return
 end
 if continuous
-    K = size(In,2);
+    K = size(In,1);
 elseif discrete
-    K = size(Ib,2);
+    K = size(Ib,1);
 end
 if exist('obs_valid','var')==0
     obs_valid = ones(K,1);
@@ -61,8 +61,12 @@ while ((strcmp(cont, 'n')==0)&&(strcmp(cont,'N')==0)&&(strcmp(cont,'y')==0)&&(st
     if count>1
         disp('*Invalid answer to one or both questions*')
     end
+    if continuous
     cont = input('\nDo you have continuous observations? (Y/N)','s');
+    end
+    if discrete
     disc = input('\nDo you have discrete observations? (Y/N)','s');
+    end
     count=count+1;
 end
 if (strcmp(cont,'y')==1)||(strcmp(cont,'Y')==1)
@@ -84,7 +88,7 @@ if ((disc == 'Y') || (disc =='y'))
     DISTR(2) = 1;
 end
 %% Determine state variables
-nx    = input('\nHow many state variables do you have (nx = 1,2,3,...)');
+nx    = input('\nHow many state variables do you have (nx = 1,2,3,...): ');
 bc=0;
 % link information
 lIn  = zeros(nIn,1);
@@ -183,7 +187,7 @@ if disc_mat==1
                 fprintf('*Please enter either 1 or 0*\n')
             end
         if xv > 0
-            str1 = ['Is this a free or fixed parameter? (Ib(' num2str(i) ')* w *x'  num2str(xv) ') Enter 1 for free, 0 for fixed :'];
+            str1 = ['Is this a free or fixed parameter? (Ib(' num2str(i) ')* w *x'  num2str(xv) ') Enter 1 for free, 0 for fixed : '];
         else
             str1 = ['Is this a free or fixed parameter? (Ib(' num2str(i) ')*w) Enter 1 for free, 0 for fixed : '];
         end
@@ -341,7 +345,7 @@ while (thresh ~='y')&&(thresh~='Y')&&(thresh~='n')&&(thresh~='N')
     if (thresh =='y')||(thresh=='Y')
         inc_thresh=1;
         while (ischar(censor_thr)==1)
-            censor_thr = input('\nPlease enter a numerical value for your threshold. ');%enter threshold level
+            censor_thr = input('\nPlease enter a numerical value for your threshold: ');%enter threshold level
         end
         count=1;
         while (censor_mode~=1)&&(censor_mode~=2)
@@ -379,12 +383,12 @@ end
 if inc_thresh
     Param = compass_set_censor_threshold_proc_mode(Param, censor_thr,censor_mode,update_mode);
 end
-Iter= input('\nEnter the number of compass_em training iterations.'); %Choose Iter value for compass_em
+Iter= input('\nEnter the number of compass_em training iterations: '); %Choose Iter value for compass_em
 Param.Iter = Iter;
 Param    = compass_set_learning_param(Param,Iter,UpdateStateParam,...
     UpdateStateNoise,UpdateStateX0,UpdateCModelParam,UpdateCModelNoise,...
     UpdateDModelParam,DiagonalA,UpdateMode,UpdateCModelShift);
-path = input('Please enter the full path of where to save your new variable set, ending with a backslash ("\"): ','s');
+path = input('Please enter the full path of where to save your new variable set, ending with a backslash ("\") \n(Press enter to save in current directory)','s');
 suffix = input('Please enter the suffix you would like to add to the "em_set" filename: ','s');
 name = ['em_set' suffix];
 %% Save new variables

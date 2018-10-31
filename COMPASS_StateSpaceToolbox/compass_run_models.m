@@ -4,7 +4,6 @@ for i = 1:length(variables) %for as many variable sets given, a new field contai
     this = char(variables(i));
     load(this)
     [rXSmt,rSSmt,Param,rXPos,rSPos,ML,EYn,EYb,rYn,rYb] = compass_em(DISTR,Uk,In,Ib,Yn,Yb,Param,obs_valid);
-    answer = {'rXSmt','rSSmt','Param','rXPos','rSPos','ML','EYn','EYb','rYn','rYb';rXSmt,rSSmt,Param,rXPos,rSPos,ML,EYn,EYb,rYn,rYb};
-    save(['model_result' num2str(i)],'answer')
+    save(['model_result' num2str(i)],'rXSmt','rSSmt','Param','rXPos','rSPos','ML','EYn','EYb','rYn','rYb')
 end
 end
