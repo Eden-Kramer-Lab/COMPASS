@@ -97,7 +97,7 @@ if DISTR(1) == 1   % main observation is Normal
      ys = Cut_Time:0.01:max(Cut_Time+10,Yp+10*sqrt(Sk)); 
      Pa  = pdf('normal',ys,Yp,sqrt(Sk));
      CPa = cumsum(Pa);
-     CPa = CPa / sum(CPa);
+     CPa = CPa / sum(Pa);
      [~,ui] = min(abs(rand-CPa));
      Yn = ys(ui);
 end
@@ -112,7 +112,7 @@ if DISTR(1) == 2   % main observation is Gamma
      ys  = ys-S;
      Pa  = gampdf(ys,EYn*Vk,1/Vk);
      CPa = cumsum(Pa);
-     CPa = CPa / sum(CPa);
+     CPa = CPa / sum(Pa);
      [~,ui] = min(abs(rand-CPa));
      Yn = S+ys(ui);
 end
