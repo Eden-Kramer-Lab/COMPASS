@@ -1123,7 +1123,7 @@ end
            ey  =  etk*XSmt{z}+ftk*Ib(z,:)';
            sy  =  etk*SSmt{z}*etk';
            pt  =  1/(1+exp(-ey));
-           f   =  f - Yb(z)*ey + log(1+exp(ey))+0.5*pt*(pt-1)*sy;
+           f   =  f - Yb(z)*ey + log(1+exp(ey))+0.5*pt*(1-pt)*sy;
         end
     end
     % Gamma Paramater Estimation
